@@ -1,0 +1,194 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <title>台湾足球网站</title>
+    <style>
+        /* 自定义一些过渡和动画效果 */
+        .btn-hover {
+            transition: all 0.3s ease;
+        }
+
+        .btn-hover:hover {
+            transform: scale(1.05);
+        }
+
+        .list-item-hover {
+            transition: all 0.3s ease;
+        }
+
+        .list-item-hover:hover {
+            background-color: #e5f6ff;
+        }
+
+        .image-hover {
+            transition: all 0.3s ease;
+        }
+
+        .image-hover:hover {
+            transform: scale(1.03);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-blue-600 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">台湾足球网站</h1>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="#" class="hover:underline">首页</a></li>
+                    <li><a href="#" class="hover:underline">球员</a></li>
+                    <li><a href="#" class="hover:underline">赛程</a></li>
+                    <li><a href="#" class="hover:underline">球队</a></li>
+                    <li><a href="#" class="hover:underline">新闻</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 首页图片展示 -->
+    <section class="bg-cover bg-center h-96 relative mb-8" style="background-image: url('https://picsum.photos/1200/600');">
+        <div class="absolute top-0 left-0 right-0 bottom-0 bg-black opacity-30"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-center">
+            <h2 class="text-4xl font-bold mb-4">欢迎来到台湾足球网站</h2>
+            <p class="text-xl">获取最新的足球资讯和赛事信息</p>
+        </div>
+    </section>
+
+    <!-- 主内容区域 -->
+    <main class="container mx-auto p-4">
+        <!-- 球员管理 -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-4 border-b border-gray-300 pb-2">球员管理</h2>
+            <button id="add-player" class="bg-green-500 text-white p-2 rounded btn-hover mb-2">
+                <i class="fa-solid fa-plus"></i> 添加球员
+            </button>
+            <ul id="players-list"></ul>
+        </section>
+
+        <!-- 赛程管理 -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-4 border-b border-gray-300 pb-2">赛程管理</h2>
+            <button id="add-schedule" class="bg-green-500 text-white p-2 rounded btn-hover mb-2">
+                <i class="fa-solid fa-plus"></i> 添加赛程
+            </button>
+            <ul id="schedules-list"></ul>
+        </section>
+
+        <!-- 球队管理 -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-4 border-b border-gray-300 pb-2">球队管理</h2>
+            <button id="add-team" class="bg-green-500 text-white p-2 rounded btn-hover mb-2">
+                <i class="fa-solid fa-plus"></i> 添加球队
+            </button>
+            <ul id="teams-list"></ul>
+        </section>
+
+        <!-- 新闻管理 -->
+        <section>
+            <h2 class="text-2xl font-bold mb-4 border-b border-gray-300 pb-2">新闻管理</h2>
+            <button id="add-news" class="bg-green-500 text-white p-2 rounded btn-hover mb-2">
+                <i class="fa-solid fa-plus"></i> 添加新闻
+            </button>
+            <ul id="news-list"></ul>
+        </section>
+    </main>
+
+    <script>
+        // 从本地存储获取数据
+        let players = JSON.parse(localStorage.getItem('players')) || [];
+        let schedules = JSON.parse(localStorage.getItem('schedules')) || [];
+        let teams = JSON.parse(localStorage.getItem('teams')) || [];
+        let news = JSON.parse(localStorage.getItem('news')) || [];
+
+        // 渲染列表
+        function renderList(list, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            list.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.classList.add('bg-white', 'p-4', 'rounded', 'mb-2', 'flex', 'justify-between', 'items-center', 'list-item-hover', 'shadow-sm');
+                li.textContent = item;
+                const editButton = document.createElement('button');
+                editButton.classList.add('bg-yellow-500', 'text-white', 'p-1', 'rounded', 'mr-1', 'btn-hover');
+                editButton.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> 编辑';
+                editButton.addEventListener('click', () => editItem(index, containerId));
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('bg-red-500', 'text-white', 'p-1', 'rounded', 'btn-hover');
+                deleteButton.innerHTML = '<i class="fa-solid fa-trash"></i> 删除';
+                deleteButton.addEventListener('click', () => deleteItem(index, containerId));
+                li.appendChild(editButton);
+                li.appendChild(deleteButton);
+                container.appendChild(li);
+            });
+        }
+
+        // 添加项
+        function addItem(item, list, containerId) {
+            list.push(item);
+            localStorage.setItem(containerId.replace('-list', 's'), JSON.stringify(list));
+            renderList(list, containerId);
+        }
+
+        // 编辑项
+        function editItem(index, containerId) {
+            const list = JSON.parse(localStorage.getItem(containerId.replace('-list', 's')));
+            const newItem = prompt('请输入新内容', list[index]);
+            if (newItem) {
+                list[index] = newItem;
+                localStorage.setItem(containerId.replace('-list', 's'), JSON.stringify(list));
+                renderList(list, containerId);
+            }
+        }
+
+        // 删除项
+        function deleteItem(index, containerId) {
+            const list = JSON.parse(localStorage.getItem(containerId.replace('-list', 's')));
+            list.splice(index, 1);
+            localStorage.setItem(containerId.replace('-list', 's'), JSON.stringify(list));
+            renderList(list, containerId);
+        }
+
+        // 初始化渲染
+        renderList(players, 'players-list');
+        renderList(schedules, 'schedules-list');
+        renderList(teams, 'teams-list');
+        renderList(news, 'news-list');
+
+        // 添加按钮事件
+        document.getElementById('add-player').addEventListener('click', () => {
+            const player = prompt('请输入球员名称');
+            if (player) {
+                addItem(player, players, 'players-list');
+            }
+        });
+        document.getElementById('add-schedule').addEventListener('click', () => {
+            const schedule = prompt('请输入赛程信息');
+            if (schedule) {
+                addItem(schedule, schedules, 'schedules-list');
+            }
+        });
+        document.getElementById('add-team').addEventListener('click', () => {
+            const team = prompt('请输入球队名称');
+            if (team) {
+                addItem(team, teams, 'teams-list');
+            }
+        });
+        document.getElementById('add-news').addEventListener('click', () => {
+            const newsItem = prompt('请输入新闻标题');
+            if (newsItem) {
+                addItem(newsItem, news, 'news-list');
+            }
+        });
+    </script>
+</body>
+
+</html>
+    
